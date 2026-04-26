@@ -1,0 +1,7 @@
+angin
+badai
+hujan
+hujan_petir
+kabut
+malam
+siang
