@@ -1,6 +1,7 @@
 package com.sdkdev.sumbingcompanion.core
 
 import android.graphics.Bitmap
+import android.os.SystemClock
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -94,7 +95,7 @@ class StateManager {
     }
 
     fun updateTick() {
-        val now = System.currentTimeMillis()
+        val now = SystemClock.elapsedRealtime()
         val currentState = _uiState.value
         
         when (currentState.state) {
@@ -136,7 +137,7 @@ class StateManager {
     }
 
     private fun enterWeather(cuaca: String) {
-        val now = System.currentTimeMillis()
+        val now = SystemClock.elapsedRealtime()
         weatherStartTime = now
         stateStartTime = now
         val weather = WeatherClass.fromKey(cuaca)
@@ -150,7 +151,7 @@ class StateManager {
     }
 
     private fun enterCooldown() {
-        stateStartTime = System.currentTimeMillis()
+        stateStartTime = SystemClock.elapsedRealtime()
         _uiState.value = _uiState.value.copy(
             state = WeatherState.COOLDOWN,
             countdown = COOLDOWN_SEC,
@@ -159,7 +160,7 @@ class StateManager {
     }
 
     private fun enterPostCd() {
-        stateStartTime = System.currentTimeMillis()
+        stateStartTime = SystemClock.elapsedRealtime()
         _uiState.value = _uiState.value.copy(
             state = WeatherState.POST_CD,
             countdown = POST_CD_SEC,
@@ -168,7 +169,7 @@ class StateManager {
     }
 
     private fun enterRecooldown() {
-        stateStartTime = System.currentTimeMillis()
+        stateStartTime = SystemClock.elapsedRealtime()
         _uiState.value = _uiState.value.copy(
             state = WeatherState.RECOOLDOWN,
             countdown = RECD_SEC,

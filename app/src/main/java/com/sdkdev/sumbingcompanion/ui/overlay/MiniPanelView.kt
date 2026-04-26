@@ -62,10 +62,14 @@ fun MiniPanelView(
     )
 
     // Gunakan cuaca aktif jika sedang WEATHER, jika tidak (IDLE/COOLDOWN) gunakan status siang/malam
-    val weather = if (uiState.state == WeatherState.WEATHER) {
-        WeatherClass.fromString(uiState.lastCuaca)
-    } else {
-        WeatherClass.fromString(uiState.lastPassive)
+    val weather by remember(uiState.state, uiState.lastCuaca, uiState.lastPassive) {
+        derivedStateOf {
+            if (uiState.state == WeatherState.WEATHER) {
+                WeatherClass.fromString(uiState.lastCuaca)
+            } else {
+                WeatherClass.fromString(uiState.lastPassive)
+            }
+        }
     }
 
     val configuration = LocalConfiguration.current
@@ -158,13 +162,15 @@ fun MiniPanelView(
             modifier = Modifier
                 .padding(horizontal = 14.dp, vertical = 10.dp)
                 .heightIn(max = panelMaxHeight)
-                .verticalScroll(rememberScrollState())
         ) {
-            when (selectedTab) {
-                0 -> MonitoringTab(uiState, isMonitoring, pulseAlpha, onStartStop, onReset)
-                1 -> CalibrationTab(uiState, onTestRead, monitorViewModel, onClose)
-                2 -> AutoCaptureTab(trainingViewModel, monitorViewModel, onExitService)
-                3 -> AboutTab()
+            val scrollState = rememberScrollState()
+            Box(modifier = Modifier.verticalScroll(scrollState)) {
+                when (selectedTab) {
+                    0 -> MonitoringTab(uiState, isMonitoring, pulseAlpha, onStartStop, onReset)
+                    1 -> CalibrationTab(uiState, onTestRead, monitorViewModel, onClose)
+                    2 -> AutoCaptureTab(trainingViewModel, monitorViewModel, onExitService)
+                    3 -> AboutTab()
+                }
             }
         }
     }
@@ -186,13 +192,18 @@ fun MonitoringTab(
         ) {
             Badge(state = uiState.state)
             
-            val displayTime = if (uiState.state == WeatherState.WEATHER) {
-                uiState.weatherDur.toLong() * 1000
-            } else {
-                uiState.countdown.toLong() * 1000
+            val timeText by remember(uiState.state, uiState.weatherDur, uiState.countdown) {
+                derivedStateOf {
+                    val displayTime = if (uiState.state == WeatherState.WEATHER) {
+                        uiState.weatherDur.toLong() * 1000
+                    } else {
+                        uiState.countdown.toLong() * 1000
+                    }
+                    formatTime(displayTime)
+                }
             }
             Text(
-                text = formatTime(displayTime),
+                text = timeText,
                 style = Typography.labelLarge,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Black,
@@ -201,10 +212,14 @@ fun MonitoringTab(
             )
         }
 
-        val weather = if (uiState.state == WeatherState.WEATHER) {
-            WeatherClass.fromString(uiState.lastCuaca)
-        } else {
-            WeatherClass.fromString(uiState.lastPassive)
+        val weather by remember(uiState.state, uiState.lastCuaca, uiState.lastPassive) {
+            derivedStateOf {
+                if (uiState.state == WeatherState.WEATHER) {
+                    WeatherClass.fromString(uiState.lastCuaca)
+                } else {
+                    WeatherClass.fromString(uiState.lastPassive)
+                }
+            }
         }
         
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -562,7 +577,7 @@ fun AboutTab() {
         }
         
         Text(
-            "Version 0.3.7-BETA",
+            "Version 0.3.10.BETA",
             color = TextMuted,
             fontSize = 8.sp,
             fontWeight = FontWeight.Medium

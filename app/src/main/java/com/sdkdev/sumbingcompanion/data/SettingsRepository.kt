@@ -17,7 +17,9 @@ import kotlinx.coroutines.flow.*
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
-class SettingsRepository(private val context: Context) {
+class SettingsRepository(context: Context) {
+    private val dataStore = context.applicationContext.dataStore
+    
     companion object {
         val BUBBLE_X = floatPreferencesKey("bubble_x")
         val BUBBLE_Y = floatPreferencesKey("bubble_y")
@@ -36,13 +38,13 @@ class SettingsRepository(private val context: Context) {
         val OVERLAY_ALPHA = floatPreferencesKey("overlay_alpha")
     }
 
-    val overlayAlpha: Flow<Float> = context.dataStore.data.map { it[OVERLAY_ALPHA] ?: 1.0f }
+    val overlayAlpha: Flow<Float> = dataStore.data.map { it[OVERLAY_ALPHA] ?: 1.0f }
 
-    val bubbleX: Flow<Float?> = context.dataStore.data.map { it[BUBBLE_X] }
-    val bubbleY: Flow<Float?> = context.dataStore.data.map { it[BUBBLE_Y] }
-    val cooldownDuration: Flow<Long> = context.dataStore.data.map { it[COOLDOWN_DURATION] ?: (10 * 60 * 1000L) }
+    val bubbleX: Flow<Float?> = dataStore.data.map { it[BUBBLE_X] }
+    val bubbleY: Flow<Float?> = dataStore.data.map { it[BUBBLE_Y] }
+    val cooldownDuration: Flow<Long> = dataStore.data.map { it[COOLDOWN_DURATION] ?: (10 * 60 * 1000L) }
 
-    val regionFlow: Flow<CaptureRegion> = context.dataStore.data.map {
+    val regionFlow: Flow<CaptureRegion> = dataStore.data.map {
         CaptureRegion(
             x = it[REGION_X] ?: 0,
             y = it[REGION_Y] ?: 0,
@@ -51,7 +53,7 @@ class SettingsRepository(private val context: Context) {
         )
     }
 
-    val autoCaptureConfigFlow: Flow<AutoCaptureConfig> = context.dataStore.data.map {
+    val autoCaptureConfigFlow: Flow<AutoCaptureConfig> = dataStore.data.map {
         AutoCaptureConfig(
             enabled = it[AUTO_CAPTURE_ENABLED] ?: false,
             intervalSec = it[AUTO_CAPTURE_INTERVAL] ?: 5,
@@ -65,7 +67,7 @@ class SettingsRepository(private val context: Context) {
     suspend fun getRegion(): CaptureRegion = regionFlow.first()
 
     suspend fun saveRegion(region: CaptureRegion) {
-        context.dataStore.edit {
+        dataStore.edit {
             it[REGION_X] = region.x
             it[REGION_Y] = region.y
             it[REGION_W] = region.w
@@ -74,7 +76,7 @@ class SettingsRepository(private val context: Context) {
     }
 
     suspend fun saveAutoCaptureConfig(config: AutoCaptureConfig) {
-        context.dataStore.edit {
+        dataStore.edit {
             it[AUTO_CAPTURE_ENABLED] = config.enabled
             it[AUTO_CAPTURE_INTERVAL] = config.intervalSec
             it[AUTO_CAPTURE_MAX_PER_CLASS] = config.maxPerClass
@@ -83,20 +85,20 @@ class SettingsRepository(private val context: Context) {
     }
 
     suspend fun saveBubblePosition(x: Float, y: Float) {
-        context.dataStore.edit {
+        dataStore.edit {
             it[BUBBLE_X] = x
             it[BUBBLE_Y] = y
         }
     }
 
     suspend fun saveCooldownDuration(duration: Long) {
-        context.dataStore.edit {
+        dataStore.edit {
             it[COOLDOWN_DURATION] = duration
         }
     }
 
     suspend fun saveOverlayAlpha(alpha: Float) {
-        context.dataStore.edit {
+        dataStore.edit {
             it[OVERLAY_ALPHA] = alpha
         }
     }

@@ -44,7 +44,7 @@ class DataCollectionManager(private val context: Context) {
                     it.toString()
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                SumbingLog.e("DataCollection", "Save failed", e)
                 null
             }
         } else {
@@ -58,7 +58,7 @@ class DataCollectionManager(private val context: Context) {
                 }
                 file.absolutePath
             } catch (e: Exception) {
-                e.printStackTrace()
+                SumbingLog.e("DataCollection", "Legacy save failed", e)
                 null
             }
         }

@@ -71,7 +71,7 @@ class DetectionEngine(context: Context) {
             interpreter = Interpreter(model, options)
             logModelInfo()
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to load model: ${e.message}", e)
+            SumbingLog.e(TAG, "Failed to load model: ${e.message}", e)
         }
     }
 
@@ -79,11 +79,11 @@ class DetectionEngine(context: Context) {
         val inp = interpreter ?: return
         for (i in 0 until inp.inputTensorCount) {
             val t = inp.getInputTensor(i)
-            Log.d(TAG, "Input[$i]: shape=${t.shape().contentToString()}, type=${t.dataType()}")
+            SumbingLog.d(TAG, "Input[$i]: shape=${t.shape().contentToString()}, type=${t.dataType()}")
         }
         for (i in 0 until inp.outputTensorCount) {
             val t = inp.getOutputTensor(i)
-            Log.d(TAG, "Output[$i]: shape=${t.shape().contentToString()}, type=${t.dataType()}")
+            SumbingLog.d(TAG, "Output[$i]: shape=${t.shape().contentToString()}, type=${t.dataType()}")
         }
     }
 
@@ -109,6 +109,10 @@ class DetectionEngine(context: Context) {
         // 3. Build 4-channel input buffer
         val inputBuffer = buildInputBuffer(resized)
 
+        // Cleanup intermediate bitmaps
+        if (resized != cropped) resized.recycle()
+        if (cropped != bitmap) cropped.recycle()
+
         // 4. Run inference
         val outputBuffer = Array(1) { FloatArray(N_CLASSES) }
         interpreter?.run(inputBuffer, outputBuffer)
@@ -119,7 +123,7 @@ class DetectionEngine(context: Context) {
         val log = scores.mapIndexed { i, s ->
             "${WeatherClass.fromIndex(i).key}: ${String.format(Locale.US, "%.3f", s)}"
         }.joinToString(" | ")
-        Log.d(TAG, "Scores: $log")
+        SumbingLog.d(TAG, "Scores: $log")
 
         // 5. Softmax (model output mungkin belum di-softmax jika di-export dengan logits)
         // Uncomment ini HANYA jika model di-export tanpa softmax di output layer
@@ -131,14 +135,14 @@ class DetectionEngine(context: Context) {
         val confidence = probs[maxIdx]
         val rawResult = WeatherClass.fromIndex(maxIdx)
 
-        Log.d(TAG, "Top: ${rawResult.key} conf=${String.format(Locale.US, "%.3f", confidence)}")
+        SumbingLog.d(TAG, "Top: ${rawResult.key} conf=${String.format(Locale.US, "%.3f", confidence)}")
 
         if (skipSmoothing) return rawResult to confidence
 
         // 6. Per-class confidence threshold
         val threshold = confThreshold[rawResult] ?: defaultThreshold
         if (confidence < threshold) {
-            Log.d(TAG, "Below threshold (${String.format(Locale.US, "%.2f", threshold)}), skip")
+            SumbingLog.d(TAG, "Below threshold (${String.format(Locale.US, "%.2f", threshold)}), skip")
             return WeatherClass.UNKNOWN to confidence
         }
 
@@ -204,6 +208,10 @@ class DetectionEngine(context: Context) {
                 null
             )
         }
+        
+        // Recycle the cropped result if it's a new instance created by cropRegion
+        if (cropped != bitmap) cropped.recycle()
+
         return padded
     }
 

@@ -93,9 +93,13 @@ class FloatingWindowService : LifecycleService(), ViewModelStoreOwner, SavedStat
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate() {
+        // 1. HARUS paling awal untuk Android 14/15+ agar tidak crash timeout
+        setupNotification()
+        
         super.onCreate()
         _isRunning.value = true
         savedStateRegistryController.performRestore(null)
+
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         @Suppress("DEPRECATION")
         windowManager.defaultDisplay.getRealMetrics(displayMetrics)
@@ -120,8 +124,6 @@ class FloatingWindowService : LifecycleService(), ViewModelStoreOwner, SavedStat
             }
         }
         trainingViewModel = ViewModelProvider(this, trainingViewModelFactory)[TrainingViewModel::class.java]
-
-        setupNotification()
         
         lifecycleScope.launch {
             val savedX = settingsRepo.bubbleX.first() ?: 100f
@@ -171,12 +173,18 @@ class FloatingWindowService : LifecycleService(), ViewModelStoreOwner, SavedStat
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent == null) return super.onStartCommand(intent, flags, startId)
+        
         val resultData = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent?.getParcelableExtra("projection_data", Intent::class.java)
+            intent.getParcelableExtra("projection_data", Intent::class.java)
         } else {
-            @Suppress("DEPRECATION") intent?.getParcelableExtra("projection_data")
+            @Suppress("DEPRECATION") intent.getParcelableExtra("projection_data")
         }
-        if (resultData != null) setupMediaProjection(resultData)
+        
+        if (resultData != null) {
+            setupMediaProjection(resultData)
+        }
+
         return super.onStartCommand(intent, flags, startId)
     }
 

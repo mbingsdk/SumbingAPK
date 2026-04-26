@@ -6,6 +6,12 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!--
+        BUG FIX Android 16 — configChanges di Activity
+        Tanpa ini, setiap rotation/resize menyebabkan MainActivity restart
+        → MediaProjection permission dialog muncul lagi
+        → Service menerima intent baru tanpa projection_data → overlay tidak muncul
+    -->
     <application
         android:allowBackup="true"
         android:extractNativeLibs="false"
@@ -18,7 +24,8 @@
         <activity
             android:name="com.sdkdev.sumbingcompanion.ui.MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.SumbingCompanion">
+            android:theme="@style/Theme.SumbingCompanion"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|density">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -30,7 +37,8 @@
             android:theme="@style/Theme.Transparent"
             android:taskAffinity=""
             android:launchMode="singleInstance"
-            android:excludeFromRecents="true" />
+            android:excludeFromRecents="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize" />
 
         <service
             android:name="com.sdkdev.sumbingcompanion.ui.overlay.FloatingWindowService"
