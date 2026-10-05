@@ -159,11 +159,11 @@ class MonitorViewModel(private val settingsRepo: SettingsRepository) : ViewModel
 
                 val cycleText = result.cycle?.let { " • cycle $it" } ?: ""
                 stateManager.setStatus(
-                    "Synced • \${formatSeconds(result.remainingSeconds)}$cycleText • \${result.rttMs}ms RTT"
+                    "Synced • ${formatSeconds(result.remainingSeconds)}$cycleText • ${result.rttMs}ms RTT"
                 )
             } catch (e: Exception) {
                 stateManager.setStatus(
-                    "Sync failed: \${e.message ?: e::class.java.simpleName}"
+                    "Sync failed: ${e.message ?: e::class.java.simpleName}"
                 )
             } finally {
                 _isSyncing.value = false
