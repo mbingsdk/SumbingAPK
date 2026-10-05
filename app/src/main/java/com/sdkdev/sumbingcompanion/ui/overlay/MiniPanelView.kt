@@ -49,6 +49,8 @@ fun MiniPanelView(
     onExitService: () -> Unit
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
+    val gameTime by monitorViewModel.gameTime.collectAsState()
+    val isSyncing by monitorViewModel.isSyncing.collectAsState()
 
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val pulseAlpha by infiniteTransition.animateFloat(
@@ -166,7 +168,16 @@ fun MiniPanelView(
             val scrollState = rememberScrollState()
             Box(modifier = Modifier.verticalScroll(scrollState)) {
                 when (selectedTab) {
-                    0 -> MonitoringTab(uiState, isMonitoring, pulseAlpha, onStartStop, onReset)
+                    0 -> MonitoringTab(
+                        uiState = uiState,
+                        gameTime = gameTime,
+                        isMonitoring = isMonitoring,
+                        isSyncing = isSyncing,
+                        pulseAlpha = pulseAlpha,
+                        onStartStop = onStartStop,
+                        onReset = onReset,
+                        onSync = { monitorViewModel.syncFromServer() }
+                    )
                     1 -> CalibrationTab(uiState, onTestRead, monitorViewModel, onClose)
                     2 -> AutoCaptureTab(trainingViewModel, monitorViewModel, onExitService)
                     3 -> AboutTab()
@@ -179,10 +190,13 @@ fun MiniPanelView(
 @Composable
 fun MonitoringTab(
     uiState: MonitorUiState,
+    gameTime: GameTimeSnapshot,
     isMonitoring: Boolean,
+    isSyncing: Boolean,
     pulseAlpha: Float,
     onStartStop: () -> Unit,
-    onReset: () -> Unit
+    onReset: () -> Unit,
+    onSync: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(
@@ -221,6 +235,48 @@ fun MonitoringTab(
                 }
             }
         }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(BgOverlay, RoundedCornerShape(10.dp))
+                .border(1.dp, BorderColor.copy(alpha = 0.25f), RoundedCornerShape(10.dp))
+                .padding(horizontal = 10.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text("GAME TIME", color = TextMuted, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    gameTime.gameTime,
+                    color = AccentBlue,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    if (gameTime.synced) "STAGE #${gameTime.stage}" else "NOT SYNCED",
+                    color = TextMuted,
+                    fontSize = 8.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    if (gameTime.synced) formatTime(gameTime.remainingSeconds.toLong() * 1000L) else "—",
+                    color = TextPrimary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        Text(
+            text = uiState.statusText,
+            color = TextMuted,
+            fontSize = 8.sp,
+            lineHeight = 11.sp,
+            maxLines = 2
+        )
         
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -252,7 +308,7 @@ fun MonitoringTab(
 
             Button(
                 onClick = onReset,
-                modifier = Modifier.weight(0.8f).height(36.dp),
+                modifier = Modifier.weight(0.7f).height(36.dp),
                 contentPadding = PaddingValues(0.dp),
                 shape = RoundedCornerShape(10.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -261,6 +317,26 @@ fun MonitoringTab(
                 )
             ) {
                 Text("RESET", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            }
+
+            Button(
+                onClick = onSync,
+                enabled = !isSyncing,
+                modifier = Modifier.weight(0.75f).height(36.dp),
+                contentPadding = PaddingValues(0.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = AccentBlue.copy(alpha = 0.15f),
+                    contentColor = AccentBlue,
+                    disabledContainerColor = BorderColor.copy(alpha = 0.15f),
+                    disabledContentColor = TextMuted
+                )
+            ) {
+                Text(
+                    if (isSyncing) "SYNC..." else "SYNC",
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
