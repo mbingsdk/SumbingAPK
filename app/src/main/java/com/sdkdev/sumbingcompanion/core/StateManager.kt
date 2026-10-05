@@ -29,7 +29,7 @@ class StateManager(
     private val elapsedClockMs: () -> Long = { SystemClock.elapsedRealtime() }
 ) {
     companion object {
-        const val WEATHER_CYCLE_SEC = 11 * 60 + 29
+        const val WEATHER_CYCLE_SEC = 11 * 60 + 30
         const val POST_CD_SEC = 5
         const val RECD_SEC = WEATHER_CYCLE_SEC - POST_CD_SEC
         const val RECD_ENTRY_GRACE_SEC = 5
@@ -207,7 +207,7 @@ class StateManager(
             state = WeatherState.COOLDOWN,
             countdown = remaining,
             cdTotal = remaining.coerceAtLeast(1),
-            statusText = "Cooldown • ${formatSeconds(remaining)} remaining in 11:29 cycle"
+            statusText = "Cooldown • ${formatSeconds(remaining)} remaining in 11:30 cycle"
         )
 
         if (remaining == 0) enterPostCd()

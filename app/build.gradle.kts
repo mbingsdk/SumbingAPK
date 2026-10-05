@@ -27,8 +27,8 @@ android {
         buildConfigField("String", "TEAM_WEBHOOK_URL", "\"$teamWebhookUrl\"")
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.4.0.BETA"
+        versionCode = 3
+        versionName = "1.0.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -41,6 +41,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
@@ -81,4 +82,8 @@ dependencies {
     implementation(libs.tflite.gpu.api)
     implementation(libs.accompanist.permissions)
     implementation(libs.androidx.datastore.preferences)
+
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }

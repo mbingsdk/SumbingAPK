@@ -8,7 +8,7 @@ import org.junit.Test
 
 class StateManagerParityTest {
     @Test
-    fun cooldownUsesRemainderOfElevenTwentyNineCycle() {
+    fun cooldownUsesRemainderOfElevenThirtyCycle() {
         var wall = 1_000_000L
         var elapsed = 100_000L
         val manager = StateManager(
@@ -37,20 +37,20 @@ class StateManagerParityTest {
 
         manager.handleDetection(WeatherClass.HUJAN, 0.9f)
 
-        wall += 249_000L
-        elapsed += 249_000L
-        manager.syncCountdown(440, 689)
+        wall += 250_000L
+        elapsed += 250_000L
+        manager.syncCountdown(440, 690)
 
         assertEquals(WeatherState.WEATHER, manager.uiState.value.state)
         assertEquals("hujan", manager.uiState.value.lastCuaca)
-        assertEquals(249, manager.uiState.value.weatherDur)
+        assertEquals(250, manager.uiState.value.weatherDur)
 
-        wall += 21_000L
-        elapsed += 21_000L
+        wall += 20_000L
+        elapsed += 20_000L
         manager.handleDetection(WeatherClass.SIANG, 0.9f)
 
         assertEquals(WeatherState.COOLDOWN, manager.uiState.value.state)
-        assertEquals(419, manager.uiState.value.countdown)
+        assertEquals(420, manager.uiState.value.countdown)
     }
 
     @Test
@@ -62,7 +62,7 @@ class StateManagerParityTest {
             elapsedClockMs = { elapsed }
         )
 
-        manager.syncCountdown(0, 689)
+        manager.syncCountdown(0, 690)
         assertEquals(WeatherState.POST_CD, manager.uiState.value.state)
         assertEquals(5, manager.uiState.value.countdown)
 

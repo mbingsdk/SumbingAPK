@@ -185,7 +185,7 @@ private fun SchematicLauncher(
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 NeuValueBlock(
                     label = "CYCLE",
-                    value = "11:29",
+                    value = "11:30",
                     modifier = Modifier.weight(1f),
                     valueColor = MaterialTheme.colorScheme.primary
                 )
