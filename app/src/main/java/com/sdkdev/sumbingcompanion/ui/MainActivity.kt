@@ -18,7 +18,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -226,7 +225,7 @@ private fun SchematicLauncher(
             )
             Spacer(Modifier.height(10.dp))
             SystemCheckRow(
-                icon = Icons.Default.Notifications,
+                icon = Icons.Default.Build,
                 title = "Notifications",
                 subtitle = "Foreground service status.",
                 ok = notificationsGranted,
@@ -235,7 +234,7 @@ private fun SchematicLauncher(
             )
             Spacer(Modifier.height(10.dp))
             SystemCheckRow(
-                icon = Icons.Default.Build,
+                icon = Icons.Default.Settings,
                 title = "UNIX timer",
                 subtitle = "Sync countdown + staged Game Time.",
                 ok = true
