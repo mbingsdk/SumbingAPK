@@ -52,16 +52,14 @@ class MonitorViewModel(private val settingsRepo: SettingsRepository) : ViewModel
             }
         }
 
+        startTickLoop()
         startGameTimeLoop()
         refreshGameTime()
     }
 
     fun toggleMonitoring() {
         _isMonitoring.value = !_isMonitoring.value
-        if (_isMonitoring.value) {
-            startTickLoop()
-        } else {
-            stopTickLoop()
+        if (!_isMonitoring.value) {
             stateManager.reset()
         }
     }
