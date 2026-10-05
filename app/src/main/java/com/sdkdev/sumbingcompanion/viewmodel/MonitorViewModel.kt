@@ -2,11 +2,13 @@ package com.sdkdev.sumbingcompanion.viewmodel
 
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
+import com.sdkdev.sumbingcompanion.BuildConfig
 import androidx.lifecycle.viewModelScope
 import com.sdkdev.sumbingcompanion.core.GameTimeClock
 import com.sdkdev.sumbingcompanion.core.GameTimeSnapshot
 import com.sdkdev.sumbingcompanion.core.MonitorUiState
 import com.sdkdev.sumbingcompanion.core.StateManager
+import com.sdkdev.sumbingcompanion.core.TeamWebhookReporter
 import com.sdkdev.sumbingcompanion.core.UnixTimeClient
 import com.sdkdev.sumbingcompanion.core.WeatherClass
 import com.sdkdev.sumbingcompanion.data.SettingsRepository
@@ -23,6 +25,10 @@ import kotlinx.coroutines.withContext
 class MonitorViewModel(private val settingsRepo: SettingsRepository) : ViewModel() {
     private val stateManager = StateManager()
     private val gameTimeClock = GameTimeClock()
+    private val webhookReporter = TeamWebhookReporter(
+        webhookUrl = BuildConfig.TEAM_WEBHOOK_URL,
+        appVersion = BuildConfig.VERSION_NAME
+    )
 
     val uiState: StateFlow<MonitorUiState> = stateManager.uiState
 
@@ -37,6 +43,7 @@ class MonitorViewModel(private val settingsRepo: SettingsRepository) : ViewModel
 
     private var tickJob: Job? = null
     private var gameTimeJob: Job? = null
+    private var monitorStartedAtMs: Long = 0L
     private var lastObservedStage = 0
 
     init {
@@ -58,8 +65,36 @@ class MonitorViewModel(private val settingsRepo: SettingsRepository) : ViewModel
     }
 
     fun toggleMonitoring() {
-        _isMonitoring.value = !_isMonitoring.value
-        if (!_isMonitoring.value) {
+        val starting = !_isMonitoring.value
+        _isMonitoring.value = starting
+
+        if (starting) {
+            monitorStartedAtMs = android.os.SystemClock.elapsedRealtime()
+            viewModelScope.launch(Dispatchers.IO) {
+                try {
+                    webhookReporter.sendMonitorStart()
+                } catch (_: Exception) {
+                    // Webhook must never block or break monitoring.
+                }
+            }
+        } else {
+            val durationSec = if (monitorStartedAtMs > 0L) {
+                ((android.os.SystemClock.elapsedRealtime() - monitorStartedAtMs) / 1000L)
+                    .coerceAtLeast(0L)
+                    .toInt()
+            } else {
+                0
+            }
+            monitorStartedAtMs = 0L
+
+            viewModelScope.launch(Dispatchers.IO) {
+                try {
+                    webhookReporter.sendMonitorStop(durationSec)
+                } catch (_: Exception) {
+                    // Fire-and-forget reporting only.
+                }
+            }
+
             stateManager.reset()
         }
     }
