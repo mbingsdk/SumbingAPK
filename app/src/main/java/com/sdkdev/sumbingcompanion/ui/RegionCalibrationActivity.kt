@@ -8,7 +8,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +27,7 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import com.sdkdev.sumbingcompanion.core.CaptureRegion
 import com.sdkdev.sumbingcompanion.data.SettingsRepository
+import com.sdkdev.sumbingcompanion.ui.theme.*
 import kotlinx.coroutines.launch
 
 class RegionCalibrationActivity : ComponentActivity() {
@@ -34,28 +38,28 @@ class RegionCalibrationActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         settingsRepository = SettingsRepository(this)
 
-        // Reset calibration state when finished
         val onFinished = {
             settingsRepository.setCalibrating(false)
             finish()
         }
 
         setContent {
-            RegionCalibrationScreen(
-                onSave = { region ->
-                    lifecycleScope.launch {
-                        settingsRepository.saveRegion(region)
-                        onFinished()
-                    }
-                },
-                onCancel = { onFinished() }
-            )
+            SumbingTheme {
+                RegionCalibrationScreen(
+                    onSave = { region ->
+                        lifecycleScope.launch {
+                            settingsRepository.saveRegion(region)
+                            onFinished()
+                        }
+                    },
+                    onCancel = onFinished
+                )
+            }
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        // Ensure state is reset even if user kills activity through system
         settingsRepository.setCalibrating(false)
     }
 }
@@ -70,10 +74,13 @@ fun RegionCalibrationScreen(
     var isDragging by remember { mutableStateOf(false) }
     var regionSelected by remember { mutableStateOf(false) }
 
+    val s = MaterialTheme.schematic
+    val accent = MaterialTheme.colorScheme.primary
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.4f))
+            .background(Color.Black.copy(alpha = 0.38f))
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDragStart = { offset ->
@@ -99,89 +106,121 @@ fun RegionCalibrationScreen(
         val rectH = kotlin.math.abs(currentPoint.y - startPoint.y)
 
         if (isDragging || regionSelected) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
+            Canvas(Modifier.fillMaxSize()) {
                 drawRect(
-                    color = Color(0xFF00FF88).copy(alpha = 0.1f),
+                    color = accent.copy(alpha = 0.12f),
                     topLeft = Offset(rectX, rectY),
                     size = Size(rectW, rectH)
                 )
                 drawRect(
-                    color = Color(0xFF00FF88),
+                    color = accent,
                     topLeft = Offset(rectX, rectY),
                     size = Size(rectW, rectH),
                     style = Stroke(width = 2.dp.toPx())
                 )
-                
-                // Corner handles
+
                 val handleRadius = 4.dp.toPx()
-                drawCircle(Color(0xFF00FF88), handleRadius, Offset(rectX, rectY))
-                drawCircle(Color(0xFF00FF88), handleRadius, Offset(rectX + rectW, rectY))
-                drawCircle(Color(0xFF00FF88), handleRadius, Offset(rectX, rectY + rectH))
-                drawCircle(Color(0xFF00FF88), handleRadius, Offset(rectX + rectW, rectY + rectH))
+                drawCircle(accent, handleRadius, Offset(rectX, rectY))
+                drawCircle(accent, handleRadius, Offset(rectX + rectW, rectY))
+                drawCircle(accent, handleRadius, Offset(rectX, rectY + rectH))
+                drawCircle(accent, handleRadius, Offset(rectX + rectW, rectY + rectH))
             }
         }
 
-        // Instructions
-        Box(
+        NeuRaisedCard(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = 40.dp)
-                .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(20.dp))
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .statusBarsPadding()
+                .padding(top = 12.dp, start = 16.dp, end = 16.dp),
+            radius = 22.dp,
+            padding = 14.dp
         ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                androidx.compose.material3.Icon(
+                    Icons.Default.Edit,
+                    null,
+                    tint = accent,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(Modifier.width(9.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    TechLabel("REGION CALIBRATION")
+                    Text(
+                        "Drag tepat di area icon cuaca",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                }
+            }
+            Spacer(Modifier.height(6.dp))
             Text(
-                text = "Drag untuk pilih area icon cuaca  •  Tap Back untuk batal",
-                color = Color.White,
-                fontSize = 14.sp
+                "Buat kotak sekecil mungkin tapi tetap mencakup seluruh icon. Tekan batal kalau mau kembali.",
+                color = s.muted,
+                fontSize = 10.sp,
+                lineHeight = 14.sp
             )
         }
 
-        // Preview and Buttons
-        if (regionSelected && !isDragging && rectW > 10 && rectH > 10) {
-            Column(
+        if (regionSelected && !isDragging && rectW > 10f && rectH > 10f) {
+            NeuRaisedCard(
                 modifier = Modifier
-                    .align(Alignment.Center) // Changed from BottomCenter for better visibility
-                    .background(Color.Black.copy(alpha = 0.8f), RoundedCornerShape(12.dp))
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .align(Alignment.BottomCenter)
+                    .navigationBarsPadding()
+                    .padding(16.dp),
+                radius = 24.dp,
+                padding = 16.dp
             ) {
+                TechLabel("SELECTED REGION")
+                Spacer(Modifier.height(4.dp))
+
                 Text(
-                    text = "Area Terpilih",
-                    color = Color(0xFF00FF88),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                    "${rectW.toInt()} × ${rectH.toInt()} px",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Black
                 )
                 Text(
-                    text = "Posisi: ${rectX.toInt()}, ${rectY.toInt()}",
-                    color = Color.White,
-                    fontSize = 13.sp
+                    "X ${rectX.toInt()}  •  Y ${rectY.toInt()}",
+                    color = s.muted,
+                    fontSize = 10.sp
                 )
-                Text(
-                    text = "Ukuran: ${rectW.toInt()} × ${rectH.toInt()}",
-                    color = Color.White,
-                    fontSize = 13.sp
-                )
-                
-                Spacer(modifier = Modifier.height(20.dp))
-                
-                Row {
-                    Button(
+
+                Spacer(Modifier.height(13.dp))
+
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    NeuActionButton(
+                        text = "RETRY",
                         onClick = { regionSelected = false },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
-                    ) {
-                        Text("✗ Ulangi")
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Button(
+                        modifier = Modifier.weight(1f),
+                        accent = s.amber
+                    )
+                    NeuActionButton(
+                        text = "SAVE REGION",
                         onClick = {
-                            onSave(CaptureRegion(rectX.toInt(), rectY.toInt(), rectW.toInt(), rectH.toInt()))
+                            onSave(
+                                CaptureRegion(
+                                    rectX.toInt(),
+                                    rectY.toInt(),
+                                    rectW.toInt(),
+                                    rectH.toInt()
+                                )
+                            )
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00FF88)),
-                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
-                    ) {
-                        Text("✓ SIMPAN", color = Color.Black, fontWeight = FontWeight.Bold)
-                    }
+                        modifier = Modifier.weight(1.25f),
+                        accent = s.green,
+                        filled = true
+                    )
                 }
+
+                Spacer(Modifier.height(7.dp))
+
+                NeuActionButton(
+                    text = "CANCEL",
+                    onClick = onCancel,
+                    modifier = Modifier.fillMaxWidth(),
+                    accent = s.red
+                )
             }
         }
     }
