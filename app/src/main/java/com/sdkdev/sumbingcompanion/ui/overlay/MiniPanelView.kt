@@ -275,7 +275,7 @@ fun MonitoringTab(
             NeuValueBlock(
                 label = "GAME TIME",
                 value = if (gameTime.synced) gameTime.gameTime else "—",
-                trailing = if (gameTime.synced) "#\${gameTime.stage}" else null,
+                trailing = if (gameTime.synced) "#${gameTime.stage}" else null,
                 modifier = Modifier.weight(1f),
                 valueColor = MaterialTheme.colorScheme.secondary
             )
@@ -503,7 +503,7 @@ fun AutoCaptureTab(
             ) {
                 TechLabel("OVERLAY OPACITY")
                 Text(
-                    "\${(uiState.overlayAlpha * 100).toInt()}%",
+                    "${(uiState.overlayAlpha * 100).toInt()}%",
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.labelMedium
                 )
@@ -550,14 +550,14 @@ fun AutoCaptureTab(
 
             Spacer(Modifier.height(8.dp))
 
-            TechLabel("INTERVAL  \${config.intervalSec}s")
+            TechLabel("INTERVAL  ${config.intervalSec}s")
             Slider(
                 value = config.intervalSec.toFloat(),
                 onValueChange = { viewModel.setAutoCaptureInterval(it.toInt()) },
                 valueRange = 1f..30f
             )
 
-            TechLabel("LIMIT  \${config.maxPerClass}")
+            TechLabel("LIMIT  ${config.maxPerClass}")
             Slider(
                 value = config.maxPerClass.toFloat(),
                 onValueChange = { viewModel.setAutoCaptureMax(it.toInt()) },
@@ -575,7 +575,7 @@ fun AutoCaptureTab(
                     Box(Modifier.size(7.dp).background(s.green, CircleShape))
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        "Saved: \${event.label} (\${event.totalForClass})",
+                        "Saved: ${event.label} (${event.totalForClass})",
                         color = s.green,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
