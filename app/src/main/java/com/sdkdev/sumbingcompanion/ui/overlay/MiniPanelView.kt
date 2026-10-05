@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sdkdev.sumbingcompanion.core.*
+import com.sdkdev.sumbingcompanion.BuildConfig
 import com.sdkdev.sumbingcompanion.ui.RegionCalibrationActivity
 import com.sdkdev.sumbingcompanion.ui.theme.*
 import com.sdkdev.sumbingcompanion.viewmodel.MonitorViewModel
@@ -653,7 +654,7 @@ fun AboutTab() {
         }
         
         Text(
-            "Version 0.3.10.BETA",
+            "Version ${BuildConfig.VERSION_NAME}",
             color = TextMuted,
             fontSize = 8.sp,
             fontWeight = FontWeight.Medium
