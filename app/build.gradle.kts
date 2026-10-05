@@ -1,3 +1,17 @@
+import java.util.Properties
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use { load(it) }
+    }
+}
+
+val teamWebhookUrl = localProperties
+    .getProperty("TEAM_WEBHOOK_URL", "")
+    .replace("\\", "\\\\")
+    .replace("\"", "\\\"")
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -10,6 +24,7 @@ android {
 
     defaultConfig {
         applicationId = "com.sdkdev.sumbingcompanion"
+        buildConfigField("String", "TEAM_WEBHOOK_URL", "\"$teamWebhookUrl\"")
         minSdk = 26
         targetSdk = 35
         versionCode = 2
