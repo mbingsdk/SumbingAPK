@@ -13,6 +13,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Home
@@ -111,6 +113,7 @@ private fun SchematicLauncher(
         modifier = Modifier
             .fillMaxSize()
             .systemBarsPadding()
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 18.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
@@ -239,7 +242,7 @@ private fun SchematicLauncher(
             )
         }
 
-        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.height(2.dp))
 
         NeuInsetCard(
             modifier = Modifier.fillMaxWidth(),
