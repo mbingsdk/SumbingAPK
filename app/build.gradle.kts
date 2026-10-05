@@ -1,5 +1,11 @@
 import java.util.Properties
 
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.compose.compiler)
+}
+
 val localProperties = Properties().apply {
     val file = rootProject.file("local.properties")
     if (file.exists()) {
@@ -11,12 +17,6 @@ val teamWebhookUrl = localProperties
     .getProperty("TEAM_WEBHOOK_URL", "")
     .replace("\\", "\\\\")
     .replace("\"", "\\\"")
-
-plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.compose.compiler)
-}
 
 android {
     namespace = "com.sdkdev.sumbingcompanion"
