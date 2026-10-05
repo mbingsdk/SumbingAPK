@@ -175,13 +175,13 @@ fun RegionCalibrationScreen(
                 Spacer(Modifier.height(4.dp))
 
                 Text(
-                    "\${rectW.toInt()} × \${rectH.toInt()} px",
+                    "${rectW.toInt()} × ${rectH.toInt()} px",
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Black
                 )
                 Text(
-                    "X \${rectX.toInt()}  •  Y \${rectY.toInt()}",
+                    "X ${rectX.toInt()}  •  Y ${rectY.toInt()}",
                     color = s.muted,
                     fontSize = 10.sp
                 )
