@@ -235,7 +235,11 @@ class StateManager(
     }
 
     fun reset() {
-        _uiState.value = MonitorUiState()
+        val current = _uiState.value
+        _uiState.value = MonitorUiState(
+            overlayAlpha = current.overlayAlpha,
+            isCalibrating = current.isCalibrating
+        )
         stateAnchorElapsedMs = 0L
         weatherCycleStartWallMs = 0L
         weatherSegmentStartWallMs = 0L
