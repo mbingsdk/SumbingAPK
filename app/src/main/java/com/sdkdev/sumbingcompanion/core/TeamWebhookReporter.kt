@@ -30,7 +30,7 @@ class TeamWebhookReporter(
         post(
             title = "🔴  Monitor Dihentikan",
             color = 0xE74C3C,
-            extraLines = listOf("Durasi: \`\${formatDuration(durationSec)}\`")
+            extraLines = listOf("Durasi: `${formatDuration(durationSec)}`")
         )
     }
 
@@ -46,12 +46,12 @@ class TeamWebhookReporter(
             .format(now)
 
         val description = buildList {
-            add("Mode: \`TFLITE\`")
-            add("Version: \`$appVersion\`")
-            add("Device: \`\${Build.MANUFACTURER} \${Build.MODEL}\`")
-            add("Android: \`\${Build.VERSION.RELEASE} (SDK \${Build.VERSION.SDK_INT})\`")
+            add("Mode: `TFLITE`")
+            add("Version: `$appVersion`")
+            add("Device: `${Build.MANUFACTURER} ${Build.MODEL}`")
+            add("Android: `${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})`")
             addAll(extraLines)
-            add("Waktu: \`$localTime\`")
+            add("Waktu: `$localTime`")
         }.joinToString("\n")
 
         val embed = JSONObject().apply {
@@ -93,9 +93,9 @@ class TeamWebhookReporter(
         val seconds = sec % 60
 
         return when {
-            hours > 0 -> "\${hours}j \${minutes}m \${seconds}d"
-            minutes > 0 -> "\${minutes}m \${seconds}d"
-            else -> "\${seconds}d"
+            hours > 0 -> "${hours}j ${minutes}m ${seconds}d"
+            minutes > 0 -> "${minutes}m ${seconds}d"
+            else -> "${seconds}d"
         }
     }
 }
