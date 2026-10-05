@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,8 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -42,57 +41,61 @@ fun BubbleView(
     onDrag: (Float, Float) -> Unit,
     onDragEnd: () -> Unit
 ) {
-    val borderColor = when (state) {
-        WeatherState.IDLE -> BorderColor
-        WeatherState.WEATHER -> AccentGreen
-        WeatherState.COOLDOWN -> AccentAmber
-        WeatherState.RECOOLDOWN -> AccentRed
-        WeatherState.POST_CD -> AccentBlue
+    val s = MaterialTheme.schematic
+    val stateColor = when (state) {
+        WeatherState.IDLE -> s.muted
+        WeatherState.WEATHER -> s.green
+        WeatherState.COOLDOWN -> s.amber
+        WeatherState.POST_CD -> s.blue
+        WeatherState.RECOOLDOWN -> s.red
     }
 
-    val bgBrush = when (state) {
-        WeatherState.WEATHER -> Brush.radialGradient(listOf(AccentGreen.copy(alpha = 0.2f), BgElevated))
-        WeatherState.COOLDOWN -> Brush.radialGradient(listOf(AccentAmber.copy(alpha = 0.2f), BgElevated))
-        WeatherState.RECOOLDOWN -> Brush.radialGradient(listOf(AccentRed.copy(alpha = 0.2f), BgElevated))
-        else -> Brush.linearGradient(listOf(BgElevated, BgElevated))
+    val displayTime = when (state) {
+        WeatherState.WEATHER -> formatTime(weatherDur.toLong() * 1000L)
+        WeatherState.IDLE -> "--:--"
+        else -> formatTime(countdown.toLong() * 1000L)
     }
 
     Row(
-        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .alpha(alpha)
             .pointerInput(Unit) {
                 detectDragGestures(
-                    onDragEnd = { onDragEnd() },
+                    onDragEnd = onDragEnd,
                     onDrag = { change, dragAmount ->
                         change.consume()
                         onDrag(dragAmount.x, dragAmount.y)
                     }
                 )
-            }
+            },
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        // Icon Bubble
         Box(
             modifier = Modifier
-                .size(48.dp)
-                .shadow(10.dp, CircleShape)
+                .size(52.dp)
+                .shadow(
+                    8.dp,
+                    CircleShape,
+                    ambientColor = s.shadow,
+                    spotColor = s.shadow
+                )
                 .clip(CircleShape)
-                .background(bgBrush)
-                .border(2.dp, if (state == WeatherState.IDLE) weather.color else borderColor, CircleShape)
-                .clickable { onToggle() },
+                .background(s.raised)
+                .border(1.dp, stateColor.copy(alpha = 0.6f), CircleShape)
+                .clickable(onClick = onToggle),
             contentAlignment = Alignment.Center
         ) {
             if (weather.iconRes != null) {
                 Image(
-                    painter = painterResource(id = weather.iconRes),
-                    contentDescription = null,
-                    modifier = Modifier.size(28.dp)
+                    painter = painterResource(weather.iconRes),
+                    contentDescription = weather.label,
+                    modifier = Modifier.size(29.dp)
                 )
             } else {
                 Icon(
-                    imageVector = Icons.Default.Search,
+                    Icons.Default.Search,
                     contentDescription = null,
-                    tint = weather.color,
+                    tint = stateColor,
                     modifier = Modifier.size(22.dp)
                 )
             }
@@ -100,61 +103,78 @@ fun BubbleView(
             if (regionUncalibrated) {
                 Box(
                     modifier = Modifier
-                        .size(14.dp)
+                        .size(15.dp)
                         .align(Alignment.TopEnd)
-                        .background(AccentRed, CircleShape)
-                        .border(1.5.dp, Color.White, CircleShape),
+                        .background(s.red, CircleShape)
+                        .border(1.dp, s.raised, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("!", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Black)
+                    Text(
+                        "!",
+                        color = androidx.compose.ui.graphics.Color.White,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Black
+                    )
                 }
             }
 
             if (isAutoCapturing) {
                 Box(
                     modifier = Modifier
-                        .size(10.dp)
+                        .size(9.dp)
                         .align(Alignment.TopStart)
-                        .background(AccentRed, CircleShape)
-                        .border(1.5.dp, Color.White.copy(alpha = 0.5f), CircleShape)
+                        .background(s.red, CircleShape)
+                        .border(1.dp, s.raised, CircleShape)
                 )
             }
         }
 
-        Spacer(Modifier.width(6.dp))
+        Spacer(Modifier.width(7.dp))
 
-        // Info Panel - More compact and polished
         Column(
             modifier = Modifier
-                .clip(RoundedCornerShape(12.dp))
-                .background(BgOverlay.copy(alpha = 0.85f))
-                .border(1.dp, borderColor.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.Center
+                .shadow(
+                    7.dp,
+                    RoundedCornerShape(16.dp),
+                    ambientColor = s.shadow,
+                    spotColor = s.shadow
+                )
+                .clip(RoundedCornerShape(16.dp))
+                .background(s.raised)
+                .border(1.dp, s.border, RoundedCornerShape(16.dp))
+                .padding(horizontal = 10.dp, vertical = 7.dp),
+            verticalArrangement = Arrangement.spacedBy(1.dp)
         ) {
-            Text(
-                text = weather.label.uppercase(),
-                color = weather.color,
-                fontSize = 9.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 0.5.sp
-            )
-            
-            val displayTime = if (state == WeatherState.WEATHER) {
-                formatTime(weatherDur.toLong() * 1000)
-            } else if (state == WeatherState.IDLE) {
-                "--:--"
-            } else {
-                formatTime(countdown.toLong() * 1000)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
+                Box(
+                    Modifier
+                        .size(6.dp)
+                        .background(stateColor, CircleShape)
+                )
+                Text(
+                    text = state.name,
+                    color = stateColor,
+                    fontSize = 8.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 0.7.sp
+                )
             }
 
             Text(
+                text = weather.label.uppercase(),
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
                 text = displayTime,
-                color = if (state == WeatherState.WEATHER) AccentGreen else TextPrimary,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.ExtraBold,
-                modifier = Modifier.padding(top = 1.dp)
+                color = if (state == WeatherState.WEATHER) s.green else MaterialTheme.colorScheme.onSurface,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Black
             )
         }
     }
